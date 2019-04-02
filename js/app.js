@@ -27,10 +27,15 @@ class Tomagotchi
 		this.x = 0;
 		this.y = 0;
 		//Image source:
+		//---NOTE---
+		//Ideally, this will point to a directory, which will have
+		//images with predefined names for different "states" of the
+		//tomagotchi. To implement later after photoshopping some images!
 		this.imgsrc = s;
 
 		//Timer:
 		this.counter = 0;
+		this.countmult = 25;
 
 		//Save the "this":
 		const itself = this;
@@ -39,7 +44,8 @@ class Tomagotchi
 			{
 				//this.counter++;
 				itself.incrementAll();
-			}, 1000);
+			}, 1000 / this.countmult);
+
 
 		//Create HTML elements:
 
@@ -72,8 +78,28 @@ class Tomagotchi
 		//and also the hunger, sleepy, bored, and age counters.
 		//It also handles morphing after a certain age.
 		//It also will kill the tomagotchi if the counters all reach 10.
+		
+		//Increment main seconds counter:
 		this.counter++;
+
+		//Increment hunger, sleepy, bored:
+		if (!(this.counter % 50))
+		{
+			this.hunger++;
+		}
+
+		//Make sure we update the screen:
+		this.refreshScreen();
+	}
+
+	refreshScreen()
+	{
 		$('#debugcounter').html(this.counter);
+		$('#hunger').html(this.hunger);
+		$('#sleepy').html(this.sleepy);
+		$('#bored').html(this.bored);
+		$('#age').html(this.age);
+		$('#alive').html(this.alive);
 	}
 
 	changeName(n)
