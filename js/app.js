@@ -17,6 +17,8 @@ class Tomagotchi
 
 		//Name:
 		this.name = n;
+		this.sn = toSmallString(n); //"Small Name" this is the reduced version of the name
+									//for use with making ids and stuff
 		//Counter variables:
 		this.hunger = 1;
 		this.sleepy = 1;
@@ -34,41 +36,115 @@ class Tomagotchi
 		this.imgsrc = s;
 
 		//Timer:
+		this.ms = 0;
 		this.counter = 0;
-		this.countmult = 25;
+		this.countmult = 1;
+		this.resetTimer();
 
 		//Save the "this":
 		const itself = this;
-		setInterval(
-			function ()
-			{
-				//this.counter++;
-				itself.incrementAll();
-			}, 1000 / this.countmult);
+
+		//More JQuery stuff (multipliers, etc)
 
 
 		//Create HTML elements:
 
-		//The tomagotchi should reside inside of a div with an id of this.name
+		//The tomagotchi should reside inside of a div with an id of (this.name)
 		//The div will have a class of .tg
-		//It will have an image tag with the user-selected image
+		//It will have an image tag with the user-selected image and an id of (this.name)-img
 
 		//So now we create all the things with JQuery because we want to punish ourselves
-		const $div = $(`<div class = "tg" id="${this.name}"><img src="${this.imgsrc}"></div>`);
+		let $div = $(`<div class = "tg" id="${this.sn}"><img id="${this.sn}-img" src="${this.imgsrc}"></div>`);
 
 		$('#maindiv').append($div);
 
 		this.div = $div;
 
 		//Make the tomagotchi draggable:
-
-		$div.draggable();
+		//$div.draggable();
 
 		//Shake the tomagotchi when it is first created (just because we can):
-
 		this.shake();
 
+
+
+		//Create the stats and counter elements:
+
+		//Counter and multiplier indicators:
+		$div = $(`<div id="${this.sn}-counter"></div>`);
+			$('#maindiv').append($div);
+		
+		$div = $(`<div id="${this.sn}-mult"></div>`);
+			$('#maindiv').append($div);
+		
+		//Multiplier buttons:
+		let $button = $(`<button id="${this.sn}-multup">Increase Speed</button>`);
+			$('#maindiv').append($button);
+		$button = $(`<button id="${this.sn}-multdown">Decrease Speed</button>`);
+			$('#maindiv').append($button);
+
+		//Multiplier button event listeners:
+		$(`#${this.sn}-multup`).on('click',
+			function ()
+			{
+				switch (itself.countmult)
+				{
+					case 1:
+						itself.countmult = 10;
+						break;
+					case 10:
+						itself.countmult = 100;
+						break;
+				}
+			}
+		);
+		$(`#${this.sn}-multdown`).on('click',
+			function ()
+			{
+				switch (itself.countmult)
+				{
+					case 100:
+						itself.countmult = 10;
+						break;
+					case 10:
+						itself.countmult = 1;
+						break;
+				}
+			}
+		);
+
+		//Stats:
+		$div = $(`<div id="${this.sn}-hunger"></div>`);
+			$('#maindiv').append($div);
+		
+		$div = $(`<div id="${this.sn}-sleepy"></div>`);
+			$('#maindiv').append($div);
+		
+		$div = $(`<div id="${this.sn}-bored"></div>`);
+			$('#maindiv').append($div);
+		
+		$div = $(`<div id="${this.sn}-age"></div>`);
+			$('#maindiv').append($div);
+		
+		$div = $(`<div id="${this.sn}-alive"></div>`);
+			$('#maindiv').append($div);
+
+
 		console.log(`Created a new tomagotchi with name ${this.name}`);
+	}
+
+	resetTimer()
+	{
+		//This is just a millisecond timer for now. Multiplier taken care of in incrementAll function
+
+		//Save the this:
+		const itself = this;
+		setInterval(
+		function ()
+		{
+			//this.counter++;
+			itself.incrementAll();
+		}, 10);
 	}
 
 	incrementAll()
@@ -80,12 +156,28 @@ class Tomagotchi
 		//It also will kill the tomagotchi if the counters all reach 10.
 		
 		//Increment main seconds counter:
-		this.counter++;
-
-		//Increment hunger, sleepy, bored:
-		if (!(this.counter % 50))
+		this.ms++; //milliseconds
+		if (!(this.ms % (100/this.countmult)))
 		{
-			this.hunger++;
+			this.counter++;
+
+			//Increment hunger, sleepy, bored:
+			
+			//Hunger goes up every 10 seconds
+			if (!(this.counter % 10) && (this.counter != 0) && (this.hunger < 10))
+			{
+				this.hunger++;
+			}
+			//Sleepy goes up every 20 seconds
+			if (!(this.counter % 20) && (this.counter != 0) && (this.sleepy < 10))
+			{
+				this.sleepy++;
+			}
+			//Bored goes up every 15 seconds
+			if (!(this.counter % 15) && (this.counter != 0) && (this.bored < 10))
+			{
+				this.bored++;
+			}
 		}
 
 		//Make sure we update the screen:
@@ -94,12 +186,13 @@ class Tomagotchi
 
 	refreshScreen()
 	{
-		$('#debugcounter').html(this.counter);
-		$('#hunger').html(this.hunger);
-		$('#sleepy').html(this.sleepy);
-		$('#bored').html(this.bored);
-		$('#age').html(this.age);
-		$('#alive').html(this.alive);
+		$(`#${this.sn}-counter`).html(`Counter: ${this.counter}`);
+		$(`#${this.sn}-mult`).html(`Speed multiplier: ${this.countmult}`);
+		$(`#${this.sn}-hunger`).html(`Hunger: ${this.hunger}`);
+		$(`#${this.sn}-sleepy`).html(`Sleepy: ${this.sleepy}`);
+		$(`#${this.sn}-bored`).html(`Bored: ${this.bored}`);
+		$(`#${this.sn}-age`).html(`Age: ${this.age}`);
+		$(`#${this.sn}-alive`).html(`Alive: ${this.alive}`);
 	}
 
 	changeName(n)
@@ -123,6 +216,8 @@ class Tomagotchi
 		//Kill the tomagotchi
 		//sets this.alive to false
 		//Overlays a big red X onto the image
+
+		this.alive = false;
 	}
 
 	move(dx,dy)
@@ -146,6 +241,12 @@ class Tomagotchi
 //=======FUNCTIONS GO BELOW=======
 
 
+function toSmallString(s)
+{
+	//Takes a string and returns it without any special characters or spaces
+	s = s.toLowerCase();
+	return s.replace(/[^A-Z0-9]+/ig, "_");
+}
 
 
 
@@ -161,7 +262,6 @@ const cary = new Tomagotchi("Cary Grant", "images/carygrant.png");
 
 
 //=======JQUERY STUFF GOES BELOW=======
-
 
 
 
