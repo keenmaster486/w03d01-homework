@@ -25,6 +25,7 @@ class Tomagotchi
 		this.bored = 1;
 		this.age = 0;
 		this.alive = true;
+		this.feeding = 0;
 
 		//Lights:
 		this.lights = true;
@@ -115,11 +116,11 @@ class Tomagotchi
 		);
 
 		//Activity buttons:
-		$button = $(`<button id="${this.sn}-feed">Feed</button>`);
+		$button = $(`<button id="${this.sn}-feed">Feed Cary</button>`);
 			$('#maindiv').append($button);
-		$button = $(`<button id="${this.sn}-play">Play</button>`);
+		$button = $(`<button id="${this.sn}-play">Entertain Cary</button>`);
 			$('#maindiv').append($button);
-		$button = $(`<button id="${this.sn}-turnlights">Lights out</button><br>`);
+		$button = $(`<button id="${this.sn}-turnlights">Turn out the lights</button><br>`);
 			$('#maindiv').append($button);
 
 		$(`#${this.sn}-feed`).on('click',
@@ -201,7 +202,7 @@ class Tomagotchi
 				//Increment hunger, sleepy, bored:
 				
 				//Hunger goes up every 5 seconds
-				if (!(this.counter % 5) && (this.counter != 0) && (this.hunger < 10))
+				if (!(this.counter % 5) && (this.counter != 0) && (this.hunger < 10) && this.feeding == 0)
 				{
 					this.hunger++;
 				}
@@ -226,22 +227,52 @@ class Tomagotchi
 					this.kill();
 				}
 
-
+				//Change image back to normal every 2 seconds:
+				if (!(this.counter % 2))
+				{
+					if (this.feeding == 0) {this.changeImage("normal.png");}
+				}
 
 
 				//Animation effects:
 				
 				//About to die:
-				if ((this.hunger > 7 || this.sleepy > 7 || this.bored > 7) && this.alive && (this.counter % 2))
+				if ((this.hunger > 7 || this.sleepy > 7 || this.bored > 7) && this.alive && !(this.counter % 1))
 				{
 					this.div.effect("pulsate");
 				}
 
-				//Sliding around: 
-				if (!(this.counter % 3))
+				//Scaling:
+				if (!(this.counter % 2))
 				{
-					this.div.effect("bounce");
+					$(`#${this.sn}-img`).toggle({effect: "scale", percent: 40, direction: "both"});
+					$(`#${this.sn}-img`).toggle({effect: "scale", percent: 40, direction: "both"});
 				}
+
+				//Sliding around:
+				if (!(this.counter % 4))
+				{
+					this.div.toggle({effect: "slide", direction: "right"});
+					this.div.toggle({effect: "slide", direction: "right"});
+				}
+				if (!(this.counter % 5))
+				{
+					this.div.toggle({effect: "slide", direction: "left"});
+					this.div.toggle({effect: "slide", direction: "left"});
+				}
+				if (!(this.counter % 6))
+				{
+					this.div.toggle({effect: "slide", direction: "up"});
+					this.div.toggle({effect: "slide", direction: "up"});
+				}
+				if (!(this.counter % 7))
+				{
+					this.div.toggle({effect: "slide", direction: "down"});
+					this.div.toggle({effect: "slide", direction: "down"});
+				}
+
+
+
 			}
 			else //IF LIGHTS OFF
 			{
@@ -250,7 +281,7 @@ class Tomagotchi
 				//When lights are off, ONLY increment sleep (by decreasing it!!)
 				//The sleep decrements when the lights are off faster than
 				//it increments when the lights are on (i.e. he recharges faster than he gets tired)
-				if (!(this.counter % 15) && (this.counter != 0) && (this.sleepy > 1))
+				if (!(this.counter % 5) && (this.counter != 0) && (this.sleepy > 1))
 				{
 					this.sleepy--;
 				}
@@ -261,6 +292,28 @@ class Tomagotchi
 				}
 			}
 		}
+
+
+		//STUFF THAT NEEDS TO HAPPEN FASTER THAN ONCE PER SECOND:
+
+		//Eating:
+		if (!(this.ms % 25) && (this.feeding > 0) && this.alive && this.lights)
+		{
+			this.feeding++;
+			if (!(this.feeding % 2))
+			{
+				this.changeImage("pizzaeat.png");
+			}
+			else
+			{
+				this.changeImage("normal.png");
+			}
+			if (this.feeding > 14)
+			{
+				this.feeding = 0;
+			}
+		}
+
 		//Make sure we update the screen:
 		this.refreshScreen();
 	}
@@ -270,11 +323,11 @@ class Tomagotchi
 		$(`#${this.sn}-counter`).html(`Counter: ${this.counter}`);
 		$(`#${this.sn}-mult`).html(`Speed multiplier: ${this.countmult}`);
 		$(`#${this.sn}-hunger`).html(`Hunger: ${this.hunger}`);
-		$(`#${this.sn}-sleepy`).html(`Sleepy: ${this.sleepy}`);
-		$(`#${this.sn}-bored`).html(`Bored: ${this.bored}`);
-		$(`#${this.sn}-lights`).html(`Lights: ${this.lights}`);
+		$(`#${this.sn}-sleepy`).html(`Exhaustion: ${this.sleepy}`);
+		$(`#${this.sn}-bored`).html(`Boredom: ${this.bored}`);
+		//$(`#${this.sn}-lights`).html(`Lights: ${this.lights}`);
 		$(`#${this.sn}-age`).html(`Age: ${this.age}`);
-		$(`#${this.sn}-alive`).html(`Alive: ${this.alive}`);
+		//$(`#${this.sn}-alive`).html(`Alive: ${this.alive}`);
 	}
 
 	changeName(n)
@@ -292,20 +345,30 @@ class Tomagotchi
 	{
 		//Feeds the tomagotchi
 		console.log("FEED");
-		if (this.hunger > 1 && this.lights) {this.hunger--;}
+		if (this.hunger > 1 && this.lights && this.feeding == 0) {this.hunger--;};
+		this.feeding++;
 	}
 
 	play()
 	{
 		//Play with the tomagotchi
 		console.log("PLAY");
-		if (this.bored > 1 && this.lights) {this.bored--;}
+		if (this.bored > 1 && this.lights) {this.bored--;};
+		this.changeImage("supernova.png");
 	}
 
 	toggleLights()
 	{
 		this.lights = !this.lights;
-		console.log(`LIGHTS ${this.lights}`)
+		if (this.lights)
+		{
+			$("body").css("background-image", `url("${this.imgsrc}/background.jpg")`);
+		}
+		else
+		{
+			$("body").css("background-image", `url("${this.imgsrc}/night.jpg")`);
+		}
+		console.log(`LIGHTS ${this.lights}`);
 	}
 
 	kill()
@@ -317,6 +380,8 @@ class Tomagotchi
 		this.alive = false;
 		this.changeImage("dead.png");
 		this.div.effect("shake");
+		this.refreshScreen();
+		alert("Cary has died! You failed. Alfred Hitchcock is very disappointed, but it did make for a good murder scene.");
 	}
 
 	move(dx,dy)
