@@ -1,0 +1,30 @@
+
+header
+{
+	font-family: sans-serif;
+	text-align: center;
+}
+
+body
+{
+	background-image: url("../files/carygrant/background.jpg");
+	background-position: center;
+	background-size: cover;
+}
+
+div
+{
+}
+
+#tomdiv
+{
+	text-align: center;
+}
+
+#maindiv
+{
+	width: 200px;
+	height: 100%;
+	color: white;
+	background-color: black;
+}

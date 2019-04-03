@@ -60,15 +60,12 @@ class Tomagotchi
 		//So now we create all the things with JQuery because we want to punish ourselves
 		let $div = $(`<div class = "tg" id="${this.sn}"><img id="${this.sn}-img" src="${this.imgsrc}/normal.png"></div>`);
 
-		$('#maindiv').append($div);
+		$('#tomdiv').append($div);
 
 		this.div = $div;
 
 		//Make the tomagotchi draggable:
-		//$div.draggable();
-
-		//Shake the tomagotchi when it is first created (just because we can):
-		this.shake();
+		$div.draggable();
 
 
 
@@ -163,6 +160,8 @@ class Tomagotchi
 		$div = $(`<div id="${this.sn}-alive"></div>`);
 			$('#maindiv').append($div);
 
+		//The tomagatchi has been created, so remember to shake the baby:
+		this.div.effect("shake");
 
 		console.log(`Created a new tomagotchi with name ${this.name}`);
 	}
@@ -201,23 +200,23 @@ class Tomagotchi
 
 				//Increment hunger, sleepy, bored:
 				
-				//Hunger goes up every 10 seconds
-				if (!(this.counter % 10) && (this.counter != 0) && (this.hunger < 10))
+				//Hunger goes up every 5 seconds
+				if (!(this.counter % 5) && (this.counter != 0) && (this.hunger < 10))
 				{
 					this.hunger++;
 				}
-				//Sleepy goes up every 20 seconds
-				if (!(this.counter % 20) && (this.counter != 0) && (this.sleepy < 10))
+				//Sleepy goes up every 10 seconds
+				if (!(this.counter % 10) && (this.counter != 0) && (this.sleepy < 10))
 				{
 					this.sleepy++;
 				}
-				//Bored goes up every 15 seconds
-				if (!(this.counter % 15) && (this.counter != 0) && (this.bored < 10))
+				//Bored goes up every 7 seconds
+				if (!(this.counter % 7) && (this.counter != 0) && (this.bored < 10))
 				{
 					this.bored++;
 				}
-				//Age increments every minute
-				if (!(this.counter % 60) && (this.counter != 0) && (this.age < 10))
+				//Age increments every 15 seconds
+				if (!(this.counter % 15) && (this.counter != 0) && (this.age < 10))
 				{
 					this.age++;
 				}
@@ -225,6 +224,23 @@ class Tomagotchi
 				if (this.hunger == 10 || this.sleepy == 10 || this.bored == 10 || this.age == 10)
 				{
 					this.kill();
+				}
+
+
+
+
+				//Animation effects:
+				
+				//About to die:
+				if ((this.hunger > 7 || this.sleepy > 7 || this.bored > 7) && this.alive && (this.counter % 2))
+				{
+					this.div.effect("pulsate");
+				}
+
+				//Sliding around: 
+				if (!(this.counter % 3))
+				{
+					this.div.effect("bounce");
 				}
 			}
 			else //IF LIGHTS OFF
@@ -300,17 +316,13 @@ class Tomagotchi
 
 		this.alive = false;
 		this.changeImage("dead.png");
+		this.div.effect("shake");
 	}
 
 	move(dx,dy)
 	{
 		this.x = this.x + dx;
 		this.y = this.y + dy;
-	}
-
-	shake()
-	{
-		this.div.effect("shake");
 	}
 
 
@@ -326,6 +338,8 @@ class Tomagotchi
 function toSmallString(s)
 {
 	//Takes a string and returns it without any special characters or spaces
+	//Got this from Stack Overflow
+	//(this function is used to get a string that can be used to make ids for elements)
 	s = s.toLowerCase();
 	return s.replace(/[^A-Z0-9]+/ig, "_");
 }
