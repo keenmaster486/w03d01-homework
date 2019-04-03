@@ -25,6 +25,10 @@ class Tomagotchi
 		this.bored = 1;
 		this.age = 0;
 		this.alive = true;
+
+		//Lights:
+		this.lights = true;
+
 		//Position on screen:
 		this.x = 0;
 		this.y = 0;
@@ -54,7 +58,7 @@ class Tomagotchi
 		//It will have an image tag with the user-selected image and an id of (this.name)-img
 
 		//So now we create all the things with JQuery because we want to punish ourselves
-		let $div = $(`<div class = "tg" id="${this.sn}"><img id="${this.sn}-img" src="${this.imgsrc}"></div>`);
+		let $div = $(`<div class = "tg" id="${this.sn}"><img id="${this.sn}-img" src="${this.imgsrc}/normal.png"></div>`);
 
 		$('#maindiv').append($div);
 
@@ -80,7 +84,7 @@ class Tomagotchi
 		//Multiplier buttons:
 		let $button = $(`<button id="${this.sn}-multup">Increase Speed</button>`);
 			$('#maindiv').append($button);
-		$button = $(`<button id="${this.sn}-multdown">Decrease Speed</button>`);
+		$button = $(`<button id="${this.sn}-multdown">Decrease Speed</button><br>`);
 			$('#maindiv').append($button);
 
 		//Multiplier button event listeners:
@@ -113,6 +117,33 @@ class Tomagotchi
 			}
 		);
 
+		//Activity buttons:
+		$button = $(`<button id="${this.sn}-feed">Feed</button>`);
+			$('#maindiv').append($button);
+		$button = $(`<button id="${this.sn}-play">Play</button>`);
+			$('#maindiv').append($button);
+		$button = $(`<button id="${this.sn}-turnlights">Lights out</button><br>`);
+			$('#maindiv').append($button);
+
+		$(`#${this.sn}-feed`).on('click',
+			function ()
+			{
+				itself.feed();
+			}
+		);
+		$(`#${this.sn}-play`).on('click',
+			function ()
+			{
+				itself.play();
+			}
+		);
+		$(`#${this.sn}-turnlights`).on('click',
+			function ()
+			{
+				itself.toggleLights();
+			}
+		);
+
 		//Stats:
 		$div = $(`<div id="${this.sn}-hunger"></div>`);
 			$('#maindiv').append($div);
@@ -121,6 +152,9 @@ class Tomagotchi
 			$('#maindiv').append($div);
 		
 		$div = $(`<div id="${this.sn}-bored"></div>`);
+			$('#maindiv').append($div);
+
+		$div = $(`<div id="${this.sn}-lights"></div>`);
 			$('#maindiv').append($div);
 		
 		$div = $(`<div id="${this.sn}-age"></div>`);
@@ -156,30 +190,61 @@ class Tomagotchi
 		//It also will kill the tomagotchi if the counters all reach 10.
 		
 		//Increment main seconds counter:
-		this.ms++; //milliseconds
-		if (!(this.ms % (100/this.countmult)))
-		{
-			this.counter++;
+		if (this.alive) {this.ms++;} //milliseconds (eh... not a millisecond timer any more but whatever)
 
-			//Increment hunger, sleepy, bored:
-			
-			//Hunger goes up every 10 seconds
-			if (!(this.counter % 10) && (this.counter != 0) && (this.hunger < 10))
+		//Increment all the rest of the stuff (if the milliseconds timer is at a certain point):
+		if (!(this.ms % (100/this.countmult)) && this.alive)
+		{
+			if (this.lights) //IF LIGHTS ON
 			{
-				this.hunger++;
+				this.counter++;
+
+				//Increment hunger, sleepy, bored:
+				
+				//Hunger goes up every 10 seconds
+				if (!(this.counter % 10) && (this.counter != 0) && (this.hunger < 10))
+				{
+					this.hunger++;
+				}
+				//Sleepy goes up every 20 seconds
+				if (!(this.counter % 20) && (this.counter != 0) && (this.sleepy < 10))
+				{
+					this.sleepy++;
+				}
+				//Bored goes up every 15 seconds
+				if (!(this.counter % 15) && (this.counter != 0) && (this.bored < 10))
+				{
+					this.bored++;
+				}
+				//Age increments every minute
+				if (!(this.counter % 60) && (this.counter != 0) && (this.age < 10))
+				{
+					this.age++;
+				}
+
+				if (this.hunger == 10 || this.sleepy == 10 || this.bored == 10 || this.age == 10)
+				{
+					this.kill();
+				}
 			}
-			//Sleepy goes up every 20 seconds
-			if (!(this.counter % 20) && (this.counter != 0) && (this.sleepy < 10))
+			else //IF LIGHTS OFF
 			{
-				this.sleepy++;
-			}
-			//Bored goes up every 15 seconds
-			if (!(this.counter % 15) && (this.counter != 0) && (this.bored < 10))
-			{
-				this.bored++;
+				this.counter++;
+
+				//When lights are off, ONLY increment sleep (by decreasing it!!)
+				//The sleep decrements when the lights are off faster than
+				//it increments when the lights are on (i.e. he recharges faster than he gets tired)
+				if (!(this.counter % 15) && (this.counter != 0) && (this.sleepy > 1))
+				{
+					this.sleepy--;
+				}
+				//When sleep has reached 1, turn the lights on:
+				if (this.sleepy == 1)
+				{
+					this.toggleLights();
+				}
 			}
 		}
-
 		//Make sure we update the screen:
 		this.refreshScreen();
 	}
@@ -191,6 +256,7 @@ class Tomagotchi
 		$(`#${this.sn}-hunger`).html(`Hunger: ${this.hunger}`);
 		$(`#${this.sn}-sleepy`).html(`Sleepy: ${this.sleepy}`);
 		$(`#${this.sn}-bored`).html(`Bored: ${this.bored}`);
+		$(`#${this.sn}-lights`).html(`Lights: ${this.lights}`);
 		$(`#${this.sn}-age`).html(`Age: ${this.age}`);
 		$(`#${this.sn}-alive`).html(`Alive: ${this.alive}`);
 	}
@@ -201,14 +267,29 @@ class Tomagotchi
 		this.name = n;
 	}
 
+	changeImage(s)
+	{
+		$(`#${this.sn}-img`).attr("src", this.imgsrc + "/" + s);
+	}
+
 	feed()
 	{
 		//Feeds the tomagotchi
+		console.log("FEED");
+		if (this.hunger > 1 && this.lights) {this.hunger--;}
 	}
 
 	play()
 	{
 		//Play with the tomagotchi
+		console.log("PLAY");
+		if (this.bored > 1 && this.lights) {this.bored--;}
+	}
+
+	toggleLights()
+	{
+		this.lights = !this.lights;
+		console.log(`LIGHTS ${this.lights}`)
 	}
 
 	kill()
@@ -218,6 +299,7 @@ class Tomagotchi
 		//Overlays a big red X onto the image
 
 		this.alive = false;
+		this.changeImage("dead.png");
 	}
 
 	move(dx,dy)
@@ -256,7 +338,7 @@ function toSmallString(s)
 
 
 //Main tomagotchi instance:
-const cary = new Tomagotchi("Cary Grant", "images/carygrant.png");
+const cary = new Tomagotchi("Cary Grant", "files/carygrant");
 
 
 
