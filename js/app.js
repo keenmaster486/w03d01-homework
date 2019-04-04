@@ -26,6 +26,7 @@ class Tomagotchi
 		this.age = 0;
 		this.alive = true;
 		this.feeding = 0;
+		this.morphed = 0; //will increase on every morph (currently only 1)
 
 		//Lights:
 		this.lights = true;
@@ -122,6 +123,8 @@ class Tomagotchi
 			$('#maindiv').append($button);
 		$button = $(`<button id="${this.sn}-turnlights">Turn out the lights</button><br>`);
 			$('#maindiv').append($button);
+		$button = $(`<button id="${this.sn}-rename">Rename Cary</button><br>`);
+			$('#maindiv').append($button);
 
 		$(`#${this.sn}-feed`).on('click',
 			function ()
@@ -139,6 +142,13 @@ class Tomagotchi
 			function ()
 			{
 				itself.toggleLights();
+			}
+		);
+
+		$(`#${this.sn}-rename`).on('click',
+			function ()
+			{
+				itself.rename();
 			}
 		);
 
@@ -165,6 +175,12 @@ class Tomagotchi
 		this.div.effect("shake");
 
 		console.log(`Created a new tomagotchi with name ${this.name}`);
+	}
+
+	rename()
+	{
+		this.name = prompt("Enter a new name!");
+		$('h1').html(this.name);
 	}
 
 	resetTimer()
@@ -220,6 +236,7 @@ class Tomagotchi
 				if (!(this.counter % 15) && (this.counter != 0) && (this.age < 10))
 				{
 					this.age++;
+					if (this.age == 5) {this.morph();}
 				}
 
 				if (this.hunger == 10 || this.sleepy == 10 || this.bored == 10 || this.age == 10)
@@ -230,7 +247,7 @@ class Tomagotchi
 				//Change image back to normal every 2 seconds:
 				if (!(this.counter % 2))
 				{
-					if (this.feeding == 0) {this.changeImage("normal.png");}
+					if (this.feeding == 0) {this.changeImage("default");}
 				}
 
 
@@ -306,7 +323,7 @@ class Tomagotchi
 			}
 			else
 			{
-				this.changeImage("normal.png");
+				this.changeImage("default");
 			}
 			if (this.feeding > 14)
 			{
@@ -338,7 +355,21 @@ class Tomagotchi
 
 	changeImage(s)
 	{
-		$(`#${this.sn}-img`).attr("src", this.imgsrc + "/" + s);
+		if (s == "default")
+		{
+			if (this.morphed == 0)
+			{
+				$(`#${this.sn}-img`).attr("src", this.imgsrc + "/" + "normal.png");
+			}
+			else
+			{
+				$(`#${this.sn}-img`).attr("src", this.imgsrc + "/" + "supernova.png");
+			}
+		}
+		else
+		{
+			$(`#${this.sn}-img`).attr("src", this.imgsrc + "/" + s);
+		}
 	}
 
 	feed()
@@ -354,7 +385,12 @@ class Tomagotchi
 		//Play with the tomagotchi
 		console.log("PLAY");
 		if (this.bored > 1 && this.lights) {this.bored--;};
-		this.changeImage("supernova.png");
+		this.changeImage("teeth.png");
+	}
+
+	morph()
+	{
+		this.morphed++;
 	}
 
 	toggleLights()
